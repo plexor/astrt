@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My 2D Game</title>
+  </head>
+  <style>
+    
+    .title {
+  font-family: 'cursive';
+  font-size: 48px;
+  text-align: center;
+  color: white;
+  text-shadow: 3px 3px 5px gold;
+  animation: glow 1s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 3px 3px 5px gold;
+  }
+  50% {
+    text-shadow: 0 0 10px gold;
+  }
+  100% {
+    text-shadow: 3px 3px 5px gold;
+  }
+}
+
+    
+    
+    
+    
+    
+   #gameCanvas {
+  border: 10px solid gold;
+  box-shadow: 0 0 50px lightgoldenrodyellow;
+  width: 80%;
+  height: 80%;
+  max-width: 800px;
+  max-height: 600px;
+  margin: 0 auto;
+}
+body {
+  background: linear-gradient(to bottom, black, #000033);
+  background-size: cover;
+  overflow: hidden;
+}
+
+.star {
+  width: 1px;
+  height: 1px;
+  background: white;
+  position: absolute;
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.star:nth-child(1) {
+  top: 80%;
+  left: 25%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.star:nth-child(2) {
+  top: 20%;
+  left: 40%;
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.star:nth-child(3) {
+  top: 50%;
+  left: 10%;
+  animation: twinkle 1.5s ease-in-out infinite;
+}
+
+.star:nth-child(4) {
+  top: 70%;
+  left: 70%;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.star:nth-child(5) {
+  top: 60%;
+  left: 20%;
+  animation: twinkle 3.5s ease-in-out infinite;
+}
+
+button {
+  background-color: transparent;
+  border: 2px solid gold;
+  border-radius: 50%;
+  font-family: 'cursive';
+  font-size: 20px;
+  padding: 20px;
+  color: gold;
+}
+
+button:hover {
+  background-color: gold;
+  color: white;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+  #gameCanvas {
+    border: 5px solid gold;
+    width: 90%;
+    height: 90%;
+  }
+
+  button {
+    font-size: 16px;
+    padding: 15px;
+  }
+}
+}</style>
+  <body>
+    <div class="title">Ruben Colon  / A simple space shooter 2d canvas & VanillaJs</div>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <br />
+    <button id="leftButton">Move Left</button>
+    <button id="rightButton">Move Right</button>
+    <button id="jumpButton">Jump</button>
+    <button id="shootButton">Shoot</button>
+    <button id="resetButton">Reset</button>
+    <div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+<div class="star"></div>
+  <script>
+
+
+  
+window.addEventListener('load', () => {
+
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const leftButton = document.getElementById('leftButton');
+  const rightButton = document.getElementById('rightButton');
+  const shootButton = document.getElementById('shootButton');
+  const resetButton = document.getElementById('resetButton');
+
+  const player = {
+    x: canvas.width / 2,
+    y: canvas.height - 50,
+    vx: 0,
+    width: 50,
+    height: 50,
+  };
+
+  let bullets = [];
+  let enemies = [];
+
+  leftButton.addEventListener('click', () => {
+    player.vx = -5;
+  });
+
+  rightButton.addEventListener('click', () => {
+    player.vx = 5;
+  });
+
+  shootButton.addEventListener('click', () => {
+    bullets.push({
+      x: player.x + player.width / 2,
+      y: player.y,
+      vy: -10,
+      width: 5,
+      height: 20,
+    });
+  });
+
+  resetButton.addEventListener('click', () => {
+    player.x = canvas.width / 2;
+    player.y = canvas.height - 50;
+    player.vx = 0;
+    bullets.length = 0;
+    enemies.length = 0;
+  });
+
+    function update() {
+    player.x += player.vx;
+    player.vx = 0;
+
+    // keep player within canvas bounds
+    if (player.x < 0) {
+      player.x = 0;
+    } else if (player.x + player.width > canvas.width) {
+      player.x = canvas.width - player.width;
+    }
+
+    // update bullets
+    for (const bullet of bullets) {
+      bullet.y += bullet.vy;
+    }
+
+    // remove off-screen bullets
+    const filteredBullets = bullets.filter((bullet) => bullet.y > 0);
+    bullets = filteredBullets;
+
+    // update enemies
+    for (const enemy of enemies) {
+      enemy.y += enemy.vy;
+    }
+
+    // remove off-screen enemies
+    const filteredEnemies = enemies.filter((enemy) => enemy.y < canvas.height);
+    enemies = filteredEnemies;
+
+    // add new enemies at random intervals
+    if (Math.random() < 0.01) {
+      enemies.push({
+        x: Math.random() * (canvas.width - 50),
+        y: 0,
+        vy: 5,
+        width: 50,
+        height: 50,
+      });
+    }
+  }
+
+  function render() {
+    // clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // draw player
+    ctx.fillStyle = 'red';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // draw bullets
+    ctx.fillStyle = 'blue';
+    for (const bullet of bullets) {
+      ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    }
+
+    // draw enemies
+    ctx.fillStyle = 'green';
+    for (const enemy of enemies) {
+      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    }
+  }
+
+  function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+  }
+document.addEventListener('keydown', (event) => {
+  if (event.code === 'ArrowLeft') {
+    player.vx = -5;
+  } else if (event.code === 'ArrowRight') {
+    player.vx = 5;
+  } else if (event.code === 'Space') {
+    bullets.push({
+      x: player.x + player.width / 2,
+      y: player.y,
+      vy: -10,
+      width: 5,
+      height: 20,
+    });
+  }
+});
+
+document.addEventListener('keyup', (event) => {
+  if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+    player.vx = 0;
+  }
+});
+
+  
+  gameLoop();
+
+    
+});
+</script>
+
+  </body>
+</html>
